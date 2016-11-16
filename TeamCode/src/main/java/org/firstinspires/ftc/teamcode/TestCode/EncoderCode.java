@@ -1,12 +1,13 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TestCode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * Created by alucien on 11/1/2016.
  */
-
+@Autonomous
 public class EncoderCode extends OpMode {
     DcMotor rightMotor;
     DcMotor leftMotor;
