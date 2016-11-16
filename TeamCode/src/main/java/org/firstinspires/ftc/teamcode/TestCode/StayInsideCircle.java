@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 /**
  * Created by alucien on 10/25/2016.
  */
-//@Autonomous(name="stay in circle", group="lucien")
+@Autonomous(name="stay in circle", group="lucien")
 public class StayInsideCircle extends OpMode {
     DcMotor leftMotor;
     DcMotor rightMotor;
