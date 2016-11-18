@@ -68,6 +68,7 @@ public class FindLine extends OpMode {
         switch (state) {
             case ONE:
                 telemetry.addData("State", state);
+                telemetry.update();
             while (reflectance < refVar) {
                 motorRight.setPower(0.5);
                 motorLeft.setPower(0.5);
@@ -83,6 +84,8 @@ public class FindLine extends OpMode {
 
             case TWO:
                 telemetry.addData("State", state);
+                telemetry.update();
+
                 while (distance > 20) {
                     if (reflectance <= 0.25) {
                         motorRight.setPower(-0.2);
@@ -99,6 +102,8 @@ public class FindLine extends OpMode {
 
                 case SENSE_COLOR:
                     telemetry.addData("State", state);
+                    telemetry.update();
+
                     if (colorSensor.blue() > 5) {
                         armLeft.setPosition(0);
                         motorRight.setPower(0.5);
