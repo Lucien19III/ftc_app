@@ -43,7 +43,14 @@ public class FindLine extends LinearOpMode {
     public void runOpMode() {
 
         // get a reference to our compass
-        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
+        //Error handling hardware map for rangeSensor:
+        if (hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range") != null) {
+            rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
+            telemetry.addData("[HardwareMap]:", "Variable rangeSensor successfully hardwareMapped.");
+        } else {
+            telemetry.addData("[Mapping Error]:", "Variable rangeSensor unable to hardwareMap!");
+            return;
+        }
         double distance = rangeSensor.cmOptical();
         motorLeft = hardwareMap.dcMotor.get("motor_left");
         motorRight = hardwareMap.dcMotor.get("motor_right");
