@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous
 //@Disabled   // comment out or remove this line to enable this opmode
-public class FindLine extends LinearOpMode {
+public class FindLine extends OpMode {
     DcMotor motorRight;
     DcMotor motorLeft;
     Servo armLeft;
@@ -26,6 +26,10 @@ public class FindLine extends LinearOpMode {
     ModernRoboticsI2cRangeSensor rangeSensor;
     ElapsedTime time;
     ColorSensor colorSensor;
+
+    double distance;
+    double reflectance;
+    double refVar = 0.25;
 
     //static final double forwardTime = 1.0;
 
@@ -40,32 +44,26 @@ public class FindLine extends LinearOpMode {
 
 
     @Override
-    public void runOpMode() {
+    public void init() {
 
         // get a reference to our compass
-        //Error handling hardware map for rangeSensor:
-        if (hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range") != null) {
-            rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
-            telemetry.addData("[HardwareMap]:", "Variable rangeSensor successfully hardwareMapped.");
-        } else {
-            telemetry.addData("[Mapping Error]:", "Variable rangeSensor unable to hardwareMap!");
-            return;
-        }
-        double distance = rangeSensor.cmOptical();
+        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
+
         motorLeft = hardwareMap.dcMotor.get("motor_left");
         motorRight = hardwareMap.dcMotor.get("motor_right");
         colorSensor = hardwareMap.colorSensor.get("sensor_color");
         armLeft = hardwareMap.servo.get("arm_left");
         armRight = hardwareMap.servo.get("arm_right");
         motorRight.setDirection(com.qualcomm.robotcore.hardware.DcMotor.Direction.REVERSE);
-
         opticalDistanceSensor = hardwareMap.opticalDistanceSensor.get("sensor_EOPD");
-        double reflectance = opticalDistanceSensor.getLightDetected();
 
-        double refVar = 0.25;
-        time = new ElapsedTime();
-        // wait for the start button to be pressed
-        waitForStart();
+    }
+
+    @Override
+    public void loop () {
+
+        distance = rangeSensor.cmOptical();
+        reflectance = opticalDistanceSensor.getLightDetected();
 
         switch (state) {
             case ONE:
@@ -73,7 +71,7 @@ public class FindLine extends LinearOpMode {
             while (reflectance < refVar) {
                 motorRight.setPower(0.5);
                 motorLeft.setPower(0.5);
-//look at the telemetry
+                //look at the telemetry
                 telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
                 telemetry.addData("raw optical", rangeSensor.rawOptical());
                 telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
@@ -102,15 +100,15 @@ public class FindLine extends LinearOpMode {
                 case SENSE_COLOR:
                     telemetry.addData("State", state);
                     if (colorSensor.blue() > 5) {
-                    armLeft.setPosition(0);
-                    motorRight.setPower(0.5);
-                    motorLeft.setPower(0.5);
-                    sleep(1500);
+                        armLeft.setPosition(0);
+                        motorRight.setPower(0.5);
+                        motorLeft.setPower(0.5);
+                        //Need to sleep for 1500 nanoseconds
                     } else {
                         armRight.setPosition(0);
                         motorLeft.setPower(0.5);
                         motorRight.setPower(0.5);
-                        sleep(1500);
+                        //Need to sleep for 1500 nanoseconds
                     }
                     state = state.EXIT;
                     break;
