@@ -62,7 +62,7 @@ public class FindLine extends OpMode {
     @Override
     public void loop () {
 
-        distance = rangeSensor.cmOptical();
+        distance = rangeSensor.cmUltrasonic();
         reflectance = opticalDistanceSensor.getLightDetected();
 
         switch (state) {
