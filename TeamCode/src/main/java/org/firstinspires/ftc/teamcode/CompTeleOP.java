@@ -14,9 +14,9 @@ public class CompTeleOP extends OpMode {
     DcMotor arm;
 
     final double LEFT_OPEN_POSITION = 0.0;
-    final double LEFT_CLOSED_POSITION = 0.5;
+    final double LEFT_CLOSED_POSITION = 1.0;
     final double RIGHT_OPEN_POSITION = 1.0;
-    final double RIGHT_CLOSED_POSITION = 0.5;
+    final double RIGHT_CLOSED_POSITION = 0.0;
 
     Servo leftGripper;
     Servo rightGripper;
@@ -35,27 +35,36 @@ public class CompTeleOP extends OpMode {
         // Call the tankDrive method of the RobotDrive class
         myRobotDrive.tankDrive(gamepad1.left_stick_y, gamepad1.right_stick_y, true);
 
+        //hand button presser codes
+        //changed servo values to full on and x and a to activate
+        if (gamepad2.x) {
+            leftGripper.setPosition(LEFT_OPEN_POSITION);
+        } else {
+            leftGripper.setPosition(LEFT_CLOSED_POSITION);
+        }
+        if (gamepad2.a) {
+            rightGripper.setPosition(RIGHT_OPEN_POSITION);
+        } else {
+            rightGripper.setPosition(RIGHT_CLOSED_POSITION);
+        }
+
+        //cocking mech
+        //gamepad2.a should run a cocking sequence
+        //needs encoder values for specifc distance...
+
+        //trigger
+        //maybe gamepad2.right_trigger (float);
+
         //arm code
         // This code will control the up and down movement of
         // the arm using the y and b gamepad buttons
-
+        //could set encoder values so it doesn't go to far?
         if (gamepad2.y) {
-            arm.setPower(1);
+            arm.setPower(0.5);
         } else if (gamepad2.b) {
-            arm.setPower(-1);
+            arm.setPower(-0.5);
         } else {
             arm.setPower(0);
-
-            if (gamepad1.x) {
-                leftGripper.setPosition(LEFT_OPEN_POSITION);
-                rightGripper.setPosition(RIGHT_OPEN_POSITION);
-
-            }
-            if (gamepad1.a) {
-                leftGripper.setPosition(LEFT_CLOSED_POSITION);
-                rightGripper.setPosition(RIGHT_CLOSED_POSITION);
-
-            }
 
         }
     }
