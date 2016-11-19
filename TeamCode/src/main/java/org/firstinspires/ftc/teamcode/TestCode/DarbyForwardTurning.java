@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 /**
  * Created by wdarby on 10/27/2016.
  */
-@Autonomous
+//@Autonomous
 public class DarbyForwardTurning extends LinearOpMode {
     DcMotor leftMotor;
     DcMotor rightMotor;

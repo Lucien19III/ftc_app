@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous
 //@Disabled   // comment out or remove this line to enable this opmode
-public class FindLine extends OpMode {
+public class CompAutoLucien extends OpMode {
     DcMotor motorRight;
     DcMotor motorLeft;
     Servo armLeft;
