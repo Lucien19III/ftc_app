@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.Range;
  * Created by wdarby on 10/13/2016.
  */
 
-@TeleOp
+//@TeleOp
 public class darbysFirstTurn extends OpMode {
 
     DcMotor leftMotor;
