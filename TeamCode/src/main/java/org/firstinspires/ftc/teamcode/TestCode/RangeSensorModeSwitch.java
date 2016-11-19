@@ -12,11 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 @Autonomous
 public class RangeSensorModeSwitch extends OpMode {
 
-    enum  SensorMode {Ultrasonic, Optical}
-    SensorMode sensorMode;
-
-
-    //Sensors
+    //Sensor
     ModernRoboticsI2cRangeSensor rngSensor;
     int range;
 
@@ -27,6 +23,8 @@ public class RangeSensorModeSwitch extends OpMode {
     public void init () {
 
         rngSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
+        telemetry.addData("[HardwareMap]", "rngSensor Mapped.");
+        telemetry.update();
 
     }
 
@@ -38,10 +36,8 @@ public class RangeSensorModeSwitch extends OpMode {
         boolean toggle;
 
         if (rngSensor.rawOptical() > 0) {
-            sensorMode = sensorMode.Optical;
             toggle = false;
         } else {
-            sensorMode = sensorMode.Ultrasonic;
             toggle = true;
         }
 
@@ -52,7 +48,7 @@ public class RangeSensorModeSwitch extends OpMode {
         }
 
         //Telemetry
-        telemetry.addData("[Range Mode]", "Range Sensor is in " + sensorMode);
+        telemetry.addData("[Range Mode]", "Range Sensor is in " + (toggle ? "Ultrasonic" : "Optical"));
         telemetry.addData("[Range Value]", range);
         telemetry.update();
 
