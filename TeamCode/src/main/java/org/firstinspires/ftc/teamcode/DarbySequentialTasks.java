@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 /**
  * Created by wdarby on 10/27/2016.
  */
-@Autonomous
+//@Autonomous
 public class DarbySequentialTasks extends OpMode {
 
     DcMotor leftMotor;
