@@ -62,7 +62,7 @@ public class CompAutoLucien extends OpMode {
     @Override
     public void loop () {
 
-        distance = rangeSensor.cmUltrasonic();
+        distance = rangeSensor.cmOptical();
         reflectance = opticalDistanceSensor.getLightDetected();
 
         switch (state) {
