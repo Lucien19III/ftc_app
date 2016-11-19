@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 /**
  * Created by wdarby on 11/3/2016.
  */
-@Autonomous
+//@Autonomous
 public class DarbyDrivingTouchSensor extends OpMode {
 
     DcMotor leftMotor;
