@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 
 @Autonomous
-public class ColeOpMode extends OpMode {
+public class RangeSensorModeSwitch extends OpMode {
 
     enum  SensorMode {Ultrasonic, Optical}
     SensorMode sensorMode;
