@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 /**
  * Created by alucien on 10/25/2016.
  */
-@Autonomous
+//@Autonomous
 public class FollowLine extends OpMode {
     DcMotor leftMotor;
     DcMotor rightMotor;
