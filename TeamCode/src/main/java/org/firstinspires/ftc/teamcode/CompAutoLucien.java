@@ -37,7 +37,7 @@ public class CompAutoLucien extends OpMode {
     //enum State {SENSE_COLOR, RED, BLUE, DONE};
 
 
-    enum State {ONE, TWO};
+    enum State {ONE, TWO, THREE};
     State state;
 
 
@@ -67,23 +67,24 @@ public class CompAutoLucien extends OpMode {
             case ONE:
                 telemetry.addData("State", state);
                 telemetry.update();
-            while (reflectance < refVar) {
-                motorRight.setPower(0.5);
-                motorLeft.setPower(0.5);
+
+                motorRight.setPower(0.3);
+                motorLeft.setPower(0.3);
+
                 telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
                 telemetry.addData("raw optical", rangeSensor.rawOptical());
                 telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
                 telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+                telemetry.addData("Reflectance", reflectance);
                 telemetry.update();
-            }
-                state = State.TWO;
-                break;
+                if (reflectance >= refVar) {
+                    state = State.TWO;
+                }
+                    break;
 
             case TWO:
                 telemetry.addData("State", state);
                 telemetry.update();
-
-                while (distance > 20) {
                     if (reflectance <= 0.25) {
                         motorRight.setPower(-0.2);
                         motorLeft.setPower(0);
@@ -93,8 +94,18 @@ public class CompAutoLucien extends OpMode {
                     }
                     telemetry.addData("Reflectance", reflectance);
                     telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
+
+
+                if (distance < 10) {
+                    state = State.THREE;
                 }
-                break;
+                    break;
+
+            case THREE:
+                motorRight.setPower(0.0);
+                motorLeft.setPower(0.0);
+         break;
         }
     }
 }
+
