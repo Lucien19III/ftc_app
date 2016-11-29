@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -24,7 +23,6 @@ public class CompAutoLucien extends OpMode {
     Servo armRight;
     OpticalDistanceSensor opticalDistanceSensor;
     ModernRoboticsI2cRangeSensor rangeSensor;
-    ElapsedTime time;
     ColorSensor colorSensor;
 
     double distance;
@@ -39,7 +37,7 @@ public class CompAutoLucien extends OpMode {
     //enum State {SENSE_COLOR, RED, BLUE, DONE};
 
 
-    enum State {ONE, TWO, SENSE_COLOR, RED, BLUE, EXIT};
+    enum State {ONE, TWO};
     State state;
 
 
@@ -56,7 +54,7 @@ public class CompAutoLucien extends OpMode {
         armRight = hardwareMap.servo.get("arm_right");
         motorRight.setDirection(com.qualcomm.robotcore.hardware.DcMotor.Direction.REVERSE);
         opticalDistanceSensor = hardwareMap.opticalDistanceSensor.get("sensor_EOPD");
-
+        state = State.ONE;
     }
 
     @Override
@@ -72,14 +70,13 @@ public class CompAutoLucien extends OpMode {
             while (reflectance < refVar) {
                 motorRight.setPower(0.5);
                 motorLeft.setPower(0.5);
-                //look at the telemetry
                 telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
                 telemetry.addData("raw optical", rangeSensor.rawOptical());
                 telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
                 telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
                 telemetry.update();
             }
-                state = state.TWO;
+                state = State.TWO;
                 break;
 
             case TWO:
@@ -97,70 +94,7 @@ public class CompAutoLucien extends OpMode {
                     telemetry.addData("Reflectance", reflectance);
                     telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
                 }
-                state = state.SENSE_COLOR;
                 break;
-
-                case SENSE_COLOR:
-                    telemetry.addData("State", state);
-                    telemetry.update();
-
-                    if (colorSensor.blue() > 5) {
-                        armLeft.setPosition(0);
-                        motorRight.setPower(0.5);
-                        motorLeft.setPower(0.5);
-                        //Need to sleep for 1500 nanoseconds
-                    } else {
-                        armRight.setPosition(0);
-                        motorLeft.setPower(0.5);
-                        motorRight.setPower(0.5);
-                        //Need to sleep for 1500 nanoseconds
-                    }
-                    state = state.EXIT;
-                    break;
-
-            case RED:
-                telemetry.addLine("Switched to state.RED");
-                break;
-
-            case BLUE:
-                telemetry.addLine("Switched to state.BLUE");
-                break;
-
-            case EXIT:
-                telemetry.addLine("Switched to state.EXIT");
-                break;
-
-           /* case EXIT:
-                telemetry.addData("State", state);
-                telemetry.addData("Reflectance", reflectance);
-                    motorRight.setPower(-0.5);
-                    motorLeft.setPower(-0.5);
-                    sleep(500);
-                    motorLeft.setPower(0.5);
-                    motorRight.setPower(-0.5);
-                    sleep(750);
-
-                  state = state.TWO
-                  break;
-
-                  case TWO:
-                telemetry.addData("State", state);
-                while (distance > 20) {
-                    if (reflectance <= 0.25) {
-                        motorRight.setPower(-0.2);
-                        motorLeft.setPower(0);
-                    } else {
-                        motorLeft.setPower(-0.2);
-                        motorRight.setPower(0);
-                    }
-                    telemetry.addData("Reflectance", reflectance);
-                    telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-                }
-                state = state.SENSE_COLOR;
-                break;
-
-
-                    */
         }
     }
 }
