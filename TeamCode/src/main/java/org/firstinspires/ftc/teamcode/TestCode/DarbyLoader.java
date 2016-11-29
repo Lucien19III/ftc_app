@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp
 public class DarbyLoader extends OpMode {
 
-    final double ARM_OPEN_POSITION = -0.5;
-    final double ARM_CLOSED_POSITION = 0.5;
+    final double ARM_OPEN_POSITION = 0.0;
+    final double ARM_CLOSED_POSITION = 1.0;
 
     Servo loader;
 
