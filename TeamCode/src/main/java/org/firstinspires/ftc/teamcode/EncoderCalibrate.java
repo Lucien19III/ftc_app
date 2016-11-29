@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,7 +8,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 /**
  * Created by mgreg on 11/18/2016.
  */
-@TeleOp
+
+
+//@TeleOp
+@Disabled
 public class EncoderCalibrate extends LinearOpMode {
     DcMotor arm;
     DcMotor pullBack;
@@ -60,4 +64,5 @@ public class EncoderCalibrate extends LinearOpMode {
             telemetry.update();
         }
     }
+
 }
