@@ -27,7 +27,7 @@ public class CompAutoLucien extends OpMode {
 
     double distance;
     double reflectance;
-    double refVar = 0.25;
+    double refVar = 0.6;
 
     //static final double forwardTime = 1.0;
 
@@ -49,9 +49,9 @@ public class CompAutoLucien extends OpMode {
 
         motorLeft = hardwareMap.dcMotor.get("motor_left");
         motorRight = hardwareMap.dcMotor.get("motor_right");
-        colorSensor = hardwareMap.colorSensor.get("sensor_color");
-        armLeft = hardwareMap.servo.get("arm_left");
-        armRight = hardwareMap.servo.get("arm_right");
+        //colorSensor = hardwareMap.colorSensor.get("sensor_color");
+        //armLeft = hardwareMap.servo.get("arm_left");
+        //armRight = hardwareMap.servo.get("arm_right");
         motorRight.setDirection(com.qualcomm.robotcore.hardware.DcMotor.Direction.REVERSE);
         opticalDistanceSensor = hardwareMap.opticalDistanceSensor.get("sensor_EOPD");
         state = State.ONE;
@@ -84,8 +84,8 @@ public class CompAutoLucien extends OpMode {
 
             case TWO:
                 telemetry.addData("State", state);
-                telemetry.update();
-                    if (reflectance <= 0.25) {
+
+                    if (reflectance <= refVar) {
                         motorRight.setPower(-0.2);
                         motorLeft.setPower(0);
                     } else {
@@ -94,7 +94,7 @@ public class CompAutoLucien extends OpMode {
                     }
                     telemetry.addData("Reflectance", reflectance);
                     telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-
+                telemetry.update();
 
                 if (distance < 10) {
                     state = State.THREE;
