@@ -106,13 +106,13 @@ public class CompOpFull extends OpMode {
 
                     if (colorSensor.blue() > 5) {
                         armLeft.setPosition(0);
-                        motorRight.setPower(0.5);
-                        motorLeft.setPower(0.5);
+                        motorRight.setPower(0.2);
+                        motorLeft.setPower(0.2);
                         //Need to sleep for 1500 nanoseconds
                     } else {
-                        armRight.setPosition(0);
-                        motorLeft.setPower(0.5);
-                        motorRight.setPower(0.5);
+                        armRight.setPosition(1);
+                        motorLeft.setPower(0.2);
+                        motorRight.setPower(0.2);
                         //Need to sleep for 1500 nanoseconds
                     }
                     state = state.EXIT;

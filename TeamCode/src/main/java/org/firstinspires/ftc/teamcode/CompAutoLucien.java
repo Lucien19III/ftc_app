@@ -37,7 +37,7 @@ public class CompAutoLucien extends OpMode {
     //enum State {SENSE_COLOR, RED, BLUE, DONE};
 
 
-    enum State {ONE, TWO, THREE};
+    enum State {ONE, TWO, THREE,SENSE_COLOR};
     State state;
 
 
@@ -49,7 +49,7 @@ public class CompAutoLucien extends OpMode {
 
         motorLeft = hardwareMap.dcMotor.get("motor_left");
         motorRight = hardwareMap.dcMotor.get("motor_right");
-        //colorSensor = hardwareMap.colorSensor.get("sensor_color");
+        colorSensor = hardwareMap.colorSensor.get("sensor_color");
         //armLeft = hardwareMap.servo.get("arm_left");
         //armRight = hardwareMap.servo.get("arm_right");
         motorRight.setDirection(com.qualcomm.robotcore.hardware.DcMotor.Direction.REVERSE);
@@ -60,7 +60,7 @@ public class CompAutoLucien extends OpMode {
     @Override
     public void loop () {
 
-        distance = rangeSensor.cmUltrasonic();
+        distance = rangeSensor.getDistance(DistanceUnit.CM);
         reflectance = opticalDistanceSensor.getLightDetected();
 
         switch (state) {
@@ -68,8 +68,8 @@ public class CompAutoLucien extends OpMode {
                 telemetry.addData("State", state);
                 telemetry.update();
 
-                motorRight.setPower(0.3);
-                motorLeft.setPower(0.3);
+                motorRight.setPower(0.2);
+                motorLeft.setPower(0.2);
 
                 telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
                 telemetry.addData("raw optical", rangeSensor.rawOptical());
@@ -86,17 +86,18 @@ public class CompAutoLucien extends OpMode {
                 telemetry.addData("State", state);
 
                     if (reflectance <= refVar) {
-                        motorRight.setPower(-0.2);
-                        motorLeft.setPower(0);
+                        motorRight.setPower(0.2);
+                        motorLeft.setPower(-0.1);
                     } else {
-                        motorLeft.setPower(-0.2);
-                        motorRight.setPower(0);
+                        motorLeft.setPower(0.2);
+                        motorRight.setPower(-0.1);
                     }
                     telemetry.addData("Reflectance", reflectance);
                     telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-                telemetry.update();
+                    telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+                    telemetry.update();
 
-                if (distance < 10) {
+                if (distance < 15) {
                     state = State.THREE;
                 }
                     break;
@@ -104,7 +105,25 @@ public class CompAutoLucien extends OpMode {
             case THREE:
                 motorRight.setPower(0.0);
                 motorLeft.setPower(0.0);
+
+
          break;
+            case SENSE_COLOR:
+                telemetry.addData("State", state);
+                telemetry.update();
+
+                if (colorSensor.blue() > 5) {
+                    armLeft.setPosition(0);
+                    motorRight.setPower(0.2);
+                    motorLeft.setPower(0.2);
+                    //Need to sleep for 1500 nanoseconds
+                } else {
+                    armRight.setPosition(1);
+                    motorLeft.setPower(0.2);
+                    motorRight.setPower(0.2);
+                    //Need to sleep for 1500 nanoseconds
+                }
+                break;
         }
     }
 }
