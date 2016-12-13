@@ -21,7 +21,7 @@ public class LockNLoad extends OpMode {
     String[] inputCode = new String[4];
 
     enum BowStates {ARMED, ARMING, LOCK, UNLOCK, UNREELING, DISARM, DISARMED}
-    BowStates bowstate;
+    BowStates bowstate = BowStates.DISARMED;
 
     DcMotor rightDrive;
     DcMotor leftDrive;
@@ -29,9 +29,14 @@ public class LockNLoad extends OpMode {
     DcMotor aimRot;
     Servo lockPin;
     Servo grabArm;
+    Servo beaconArm;
 
     boolean bowMoving = false;
     boolean mortarDown = false;
+    boolean pinOut = false;
+
+    double startTime;
+    double startTime2;
 
     @Override
     public void init () {
@@ -44,10 +49,12 @@ public class LockNLoad extends OpMode {
         aimRot = hardwareMap.dcMotor.get("motor_aim_rot");
         lockPin = hardwareMap.servo.get("servo_lock");
         grabArm = hardwareMap.servo.get("servo_grab_arm");
+        beaconArm = hardwareMap.servo.get("servo_beacon");
 
         //Setting Defaults
-        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         
         drawBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drawBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -67,11 +74,11 @@ public class LockNLoad extends OpMode {
 
         if (pos == "UP") {
             aimRot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            aimRot.setPower(0.5);
+            aimRot.setPower(0.9);
             aimRot.setTargetPosition(0);
         } else if (pos == "DOWN") {
             aimRot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            aimRot.setPower(0.4);
+            aimRot.setPower(0.8);
             aimRot.setTargetPosition(4300);
         }
     }
@@ -87,13 +94,14 @@ public class LockNLoad extends OpMode {
         //PinLock Servo -- right bumper is added as a safety for firing
         if (gamepad1.right_bumper) { //<--- safety off when holding [right bumper]
             if (gamepad1.right_trigger > 0.3 && bowstate == BowStates.ARMED) { //<--- fire by pulling [right trigger]
-                lockPin.setPosition(0.7);
-                if (lockPin.getPosition() > 0.6) {
-                    bowstate = BowStates.DISARMED;
+                pinOut = true;
+                bowstate = bowstate.DISARMED;
+                if (lockPin.getPosition() > 0.5) {
+                    pinOut = false;
                 }
             }
-        } else {
-            lockPin.setPosition(0.0);
+        } else if (bowstate == bowstate.DISARMED) {
+            pinOut = false;
         }
 
         //What happens when you pull the trigger:
@@ -102,6 +110,7 @@ public class LockNLoad extends OpMode {
             bowstate = bowstate.ARMING;
         } else if (gamepad1.back && !bowMoving && bowstate == BowStates.ARMED) { //<---  disarm by pressing [back]
             bowMoving = true;
+            startTime2 = getRuntime();
             bowstate = bowstate.DISARM;
         }
 
@@ -109,25 +118,26 @@ public class LockNLoad extends OpMode {
             switch (bowstate) {
                 case ARMING:
                     //Pull pin out
-                    lockPin.setPosition(0.7);
+                    pinOut = true;
 
                     //Crank tubing back
                     drawBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    drawBack.setPower(0.5);
-                    drawBack.setTargetPosition(3111);
+                    drawBack.setPower(1.0);
+                    drawBack.setTargetPosition(10000);
 
                     //When tubing is all the way back, lock
                     if (!drawBack.isBusy()) {
+                        startTime = getRuntime();
                         bowstate = bowstate.LOCK;
                     }
                     break;
 
                 case LOCK:
                     //Push pin in
-                    lockPin.setPosition(0.0);
+                    pinOut = false;
 
                     //When pin is all the way in, unreel
-                    if (lockPin.getPosition() == 0.0) {
+                    if (startTime + 1.0 <= getRuntime()) {
                         bowstate = bowstate.UNREELING;
                     }
                     break;
@@ -144,25 +154,27 @@ public class LockNLoad extends OpMode {
 
                 case DISARM:
                     //Pull slack out of line
-                    drawBack.setTargetPosition(3111);
+                    drawBack.setTargetPosition(10000);
 
                     //When done winding, pull pin
                     if (!drawBack.isBusy()) {
-                        bowstate = bowstate.UNLOCK;
+                        if (startTime2 + 1.0 <= getRuntime()) {
+                            bowstate = bowstate.UNLOCK;
+                        }
                     }
                     break;
 
                 case UNLOCK:
                     //Pull pin
-                    lockPin.setPosition(0.7);
+                    pinOut = true;
 
                     //When pin pulled, unwind bow
-                    if (lockPin.getPosition() > 0.6) {
-                        drawBack.setTargetPosition(0);
-                    }
+                    drawBack.setTargetPosition(0);
                     //When unwound, drop pin
-                    if (lockPin.getPosition() > 0.6 && !drawBack.isBusy()) {
-                        lockPin.setPosition(0.0);
+                    if (!drawBack.isBusy()) {
+                        pinOut = false;
+                    }
+                    if (!drawBack.isBusy() && lockPin.getPosition() == 0) {
                         bowstate = bowstate.DISARMED;
                     }
                     break;
@@ -175,6 +187,7 @@ public class LockNLoad extends OpMode {
                 case DISARMED:
                     //Exit section of loop
                     bowMoving = false;
+                    pinOut = false;
                     break;
             }
         }
@@ -197,6 +210,13 @@ public class LockNLoad extends OpMode {
         if (!aimRot.isBusy()) {
             aimRot.setPower(0.0);
             aimRot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        //Pull Servo out when true
+        if (pinOut) {
+            lockPin.setPosition(0.9 );
+        } else {
+            lockPin.setPosition(0.0);
         }
 
 
@@ -228,9 +248,11 @@ public class LockNLoad extends OpMode {
             leftDrive.setPower(-Math.pow(gamepad2.left_stick_y, 2));
         }
 
+        beaconArm.setPosition(gamepad2.right_trigger);
+
 
         //Cheat code to give pad1 driving control...
-        boolean driveAccess = false;
+        /*boolean driveAccess = false;
         boolean depressed = false;
         String finalCode = "#";
         int activeIndex = 0;
@@ -299,11 +321,11 @@ public class LockNLoad extends OpMode {
 
             //Pad1 set power to motors
             if (yVal >= 0) {
-                rightDrive.setPower(yVal + xVal);
-                leftDrive.setPower(yVal - xVal);
-            } else {
                 rightDrive.setPower(yVal - xVal);
                 leftDrive.setPower(yVal + xVal);
+            } else {
+                rightDrive.setPower(yVal + xVal);
+                leftDrive.setPower(yVal - xVal);
             }
 
             //Pad1 Aiming (finer than normal aiming)
@@ -313,7 +335,7 @@ public class LockNLoad extends OpMode {
                 aimRot.setPower(-Math.pow(gamepad1.right_stick_y, 2));
             }
         }
-
+        */
         //End Cheat Code
 
     }
