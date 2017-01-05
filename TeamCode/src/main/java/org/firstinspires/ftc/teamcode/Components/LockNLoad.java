@@ -37,6 +37,10 @@ public class LockNLoad extends OpMode {
 
     double startTime;
     double startTime2;
+    double startTime3;
+
+    int targetDraw = 4000; // <--- Set draw target right here.
+    double pinOutVal = 0.9;
 
     @Override
     public void init () {
@@ -79,8 +83,16 @@ public class LockNLoad extends OpMode {
         } else if (pos == "DOWN") {
             aimRot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             aimRot.setPower(0.8);
-            aimRot.setTargetPosition(4300);
+            aimRot.setTargetPosition(3000);
         }
+    }
+
+    float rangeMap(float inVar, float a, float b, float c, float d) {
+        float rangeA = b - a;
+        float rangeB = d - c;
+        float percent = inVar / rangeA;
+        float returnVar = (percent * rangeB) + c;
+        return returnVar;
     }
 
     @Override
@@ -89,29 +101,29 @@ public class LockNLoad extends OpMode {
         //Untested Area-----------------------------------------------------------------------------
 
         //Little arm on top...
-        grabArm.setPosition(gamepad1.left_trigger); //<--- adjust arm on barrel with [left trigger]
+        grabArm.setPosition(rangeMap(gamepad1.left_trigger,0f,1f,0.1f,1f)); //<--- adjust arm on barrel with [left trigger]
 
         //PinLock Servo -- right bumper is added as a safety for firing
         if (gamepad1.right_bumper) { //<--- safety off when holding [right bumper]
             if (gamepad1.right_trigger > 0.3 && bowstate == BowStates.ARMED) { //<--- fire by pulling [right trigger]
                 pinOut = true;
-                bowstate = bowstate.DISARMED;
+                bowstate = BowStates.DISARMED;
                 if (lockPin.getPosition() > 0.5) {
                     pinOut = false;
                 }
             }
-        } else if (bowstate == bowstate.DISARMED) {
+        } else if (bowstate == BowStates.DISARMED) {
             pinOut = false;
         }
 
         //What happens when you pull the trigger:
         if (gamepad1.left_bumper && !bowMoving && bowstate == BowStates.DISARMED) { //<--- arm by pressing [left bumper]
             bowMoving = true;
-            bowstate = bowstate.ARMING;
+            bowstate = BowStates.ARMING;
         } else if (gamepad1.back && !bowMoving && bowstate == BowStates.ARMED) { //<---  disarm by pressing [back]
             bowMoving = true;
             startTime2 = getRuntime();
-            bowstate = bowstate.DISARM;
+            bowstate = BowStates.DISARM;
         }
 
         if (bowMoving) {
@@ -123,12 +135,12 @@ public class LockNLoad extends OpMode {
                     //Crank tubing back
                     drawBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     drawBack.setPower(1.0);
-                    drawBack.setTargetPosition(10000);
+                    drawBack.setTargetPosition(targetDraw);
 
                     //When tubing is all the way back, lock
                     if (!drawBack.isBusy()) {
                         startTime = getRuntime();
-                        bowstate = bowstate.LOCK;
+                        bowstate = BowStates.LOCK;
                     }
                     break;
 
@@ -137,8 +149,8 @@ public class LockNLoad extends OpMode {
                     pinOut = false;
 
                     //When pin is all the way in, unreel
-                    if (startTime + 1.0 <= getRuntime()) {
-                        bowstate = bowstate.UNREELING;
+                    if (startTime + 0.2 <= getRuntime()) {
+                        bowstate = BowStates.UNREELING;
                     }
                     break;
 
@@ -148,18 +160,19 @@ public class LockNLoad extends OpMode {
 
                     //When done unwinding, it's armed
                     if (!drawBack.isBusy()) {
-                        bowstate = bowstate.ARMED;
+                        bowstate = BowStates.ARMED;
                     }
                     break;
 
                 case DISARM:
                     //Pull slack out of line
-                    drawBack.setTargetPosition(10000);
+                    drawBack.setTargetPosition(targetDraw);
 
                     //When done winding, pull pin
                     if (!drawBack.isBusy()) {
-                        if (startTime2 + 1.0 <= getRuntime()) {
-                            bowstate = bowstate.UNLOCK;
+                        if (startTime2 + 0.2 <= getRuntime()) {
+                            bowstate = BowStates.UNLOCK;
+                            startTime3 = getRuntime();
                         }
                     }
                     break;
@@ -172,10 +185,12 @@ public class LockNLoad extends OpMode {
                     drawBack.setTargetPosition(0);
                     //When unwound, drop pin
                     if (!drawBack.isBusy()) {
-                        pinOut = false;
+                        if (startTime3 + 0.2 <= getRuntime()) {
+                            pinOut = false;
+                        }
                     }
                     if (!drawBack.isBusy() && lockPin.getPosition() == 0) {
-                        bowstate = bowstate.DISARMED;
+                        bowstate = BowStates.DISARMED;
                     }
                     break;
 
@@ -214,7 +229,7 @@ public class LockNLoad extends OpMode {
 
         //Pull Servo out when true
         if (pinOut) {
-            lockPin.setPosition(0.9 );
+            lockPin.setPosition(pinOutVal);
         } else {
             lockPin.setPosition(0.0);
         }
@@ -340,15 +355,42 @@ public class LockNLoad extends OpMode {
 
     }
 
+    //Reset Everything
     @Override
     public void stop() {
         Aim("UP");
         drawBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drawBack.setPower(1.0);
-        drawBack.setTargetPosition(0);
+        if (bowstate == BowStates.ARMED) {
+            startTime2 = getRuntime();
+        }
 
-        while (aimRot.isBusy() || drawBack.isBusy()) {
-            //Do crashy stuff...
+        while (aimRot.isBusy() || bowstate != BowStates.DISARMED) {
+            if (bowstate == BowStates.ARMED) {
+
+                //Pull slack out of line
+                drawBack.setTargetPosition(targetDraw);
+
+                //When done winding, pull pin
+                if (!drawBack.isBusy()) {
+                        bowstate = BowStates.UNLOCK;
+                        startTime3 = getRuntime();
+                }
+            } else if (bowstate == BowStates.UNLOCK) {
+                //Pull pin
+                lockPin.setPosition(pinOutVal);
+
+                //When pin pulled, unwind bow
+                drawBack.setTargetPosition(0);
+                //When unwound, drop pin
+                if (!drawBack.isBusy()) {
+                    if (startTime3 + 0.2 <= getRuntime()) {
+                        lockPin.setPosition(0.0);
+                    }
+                }
+                if (!drawBack.isBusy() && lockPin.getPosition() == 0) {
+                    bowstate = BowStates.DISARMED;
+                }
+            }
         }
     }
 }
